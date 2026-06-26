@@ -339,6 +339,19 @@ export function Grid({
   const langs = sourceLanguage ? [sourceLanguage, ...targets] : targets;
   const valueLangs = merged ? targets : langs;
 
+  // The base-language column is editable in place only for .xcstrings, where
+  // every language lives in the SAME document (the host writes
+  // localizations[source]). For .strings the source is a separate read-only
+  // sibling file, so the source column stays read-only — open that file to edit
+  // it. (keyAsSource is true exactly for .xcstrings.)
+  const sourceEditable = caps.keyAsSource && sourceLanguage !== "";
+  // Leftmost navigable/editable column. A read-only source column (only .strings
+  // target files have one) is skipped; otherwise col 0 is reachable.
+  const minCol = sourceLanguage !== "" && !sourceEditable ? 1 : 0;
+  // Where the cursor lands when armed with no prior position: the first target if
+  // there is one, else whatever the leftmost editable column is.
+  const startCol = langs.length > 1 ? 1 : minCol;
+
   const colWidth = (lang: string) => widths[lang] ?? DEFAULT_COL_WIDTH;
   const keyWidth =
     widths[KEY_COL_ID] ?? (merged ? DEFAULT_REF_WIDTH : DEFAULT_KEY_WIDTH);
@@ -470,7 +483,7 @@ export function Grid({
   const cellAt = (r: number, c: number): EditingCell | null => {
     const fr = flatRows[r];
     const lang = langs[c];
-    if (!fr || fr.kind === "header" || !lang || c < 1) return null;
+    if (!fr || fr.kind === "header" || !lang || c < minCol) return null;
     return { key: fr.entry.key, lang, variantKey: fr.row.variantKey };
   };
   const rowFor = (cell: EditingCell): CatalogRow | null => {
@@ -479,11 +492,15 @@ export function Grid({
   };
   const isEditableCell = (cell: EditingCell): boolean => {
     const i = navRowIndex(cell.key, cell.variantKey);
-    return (
-      i >= 0 &&
-      flatRows[i].entry.shouldTranslate &&
-      langs.indexOf(cell.lang) >= 1
-    );
+    if (i < 0) return false;
+    const c = langs.indexOf(cell.lang);
+    if (c < minCol) return false;
+    // The source column is editable only where the format allows it; targets
+    // only when the key is translatable.
+    if (cell.lang === sourceLanguage && sourceLanguage !== "") {
+      return sourceEditable;
+    }
+    return flatRows[i].entry.shouldTranslate;
   };
   const moveTarget = (cell: EditingCell, move: Move): EditingCell | null => {
     const r = navRowIndex(cell.key, cell.variantKey);
@@ -497,10 +514,10 @@ export function Grid({
     if (move === "right") {
       if (c < last) return cellAt(r, c + 1);
       const nr = stepNavRow(r, 1);
-      return nr >= 0 ? cellAt(nr, 1) : null;
+      return nr >= 0 ? cellAt(nr, minCol) : null;
     }
     if (move === "left") {
-      if (c > 1) return cellAt(r, c - 1);
+      if (c > minCol) return cellAt(r, c - 1);
       const nr = stepNavRow(r, -1);
       return nr >= 0 ? cellAt(nr, last) : null;
     }
@@ -514,7 +531,14 @@ export function Grid({
   };
   const commitMove = (cell: EditingCell, value: string, move: Move) => {
     const row = rowFor(cell);
-    const current = row?.cells[cell.lang]?.value ?? "";
+    // For the implicit base-language cell (xcstrings, key == source), the
+    // effective current value is the key itself → only write an override when the
+    // text actually differs from the key (avoids a redundant localizations[en]).
+    const isSrc = cell.lang === sourceLanguage && sourceLanguage !== "";
+    const baseRow = (row?.segments.length ?? 1) === 0;
+    const current =
+      row?.cells[cell.lang]?.value ??
+      (isSrc && caps.keyAsSource && baseRow ? cell.key : "");
     if (row && value !== current) {
       onSetValue(cell.key, cell.lang, row.segments, value);
     }
@@ -545,10 +569,10 @@ export function Grid({
     scrollActiveIntoView.current = true;
     let r = active ? navRowIndex(active.key, active.variantKey) : -1;
     let c = active ? langs.indexOf(active.lang) : -1;
-    if (r < 0 || c < 1) {
-      // No (or stale) cursor → land on the first navigable target cell.
+    if (r < 0 || c < minCol) {
+      // No (or stale) cursor → land on the first navigable cell.
       const f = firstNavRow();
-      const first = f >= 0 ? cellAt(f, 1) : null;
+      const first = f >= 0 ? cellAt(f, startCol) : null;
       if (first) setActive(first);
       return;
     }
@@ -556,7 +580,7 @@ export function Grid({
       const nr = stepNavRow(r, dRow);
       if (nr >= 0) r = nr;
     }
-    if (dCol) c = Math.min(langs.length - 1, Math.max(1, c + dCol));
+    if (dCol) c = Math.min(langs.length - 1, Math.max(minCol, c + dCol));
     const next = cellAt(r, c);
     if (next) setActive(next);
   };
@@ -621,7 +645,7 @@ export function Grid({
   const onGridFocus = (e: ReactFocusEvent<HTMLDivElement>) => {
     if (e.target !== e.currentTarget || active) return;
     const f = firstNavRow();
-    const first = f >= 0 ? cellAt(f, 1) : null;
+    const first = f >= 0 ? cellAt(f, startCol) : null;
     if (first) setActive(first);
   };
 
@@ -968,6 +992,10 @@ function RowView({
     ? row.cells[sourceLanguage]?.value ?? entry.key
     : row.cells[sourceLanguage]?.value;
 
+  // The base-language column is editable in place only for .xcstrings (all
+  // languages in one document). See the Grid-level note.
+  const sourceEditable = caps.keyAsSource && sourceLanguage !== "";
+
   // Orphaned: a key in this (target) file with no counterpart in the source
   // language — likely removed upstream. Only flagged where keys can drift from a
   // source file (.strings) and a real source column exists.
@@ -1006,6 +1034,25 @@ function RowView({
     onNoteCancel: () => setEditingNote(null),
   };
 
+  // The source cell, addressed for the keyboard cursor / editor. Merged view
+  // folds the source into the RefCell, so its edit wiring is computed here and
+  // passed down; split view edits the source through the value-cell loop below.
+  const srcCellId: EditingCell = {
+    key: entry.key,
+    lang: sourceLanguage,
+    variantKey: row.variantKey,
+  };
+  const srcEditing =
+    !!editing &&
+    editing.key === entry.key &&
+    editing.lang === sourceLanguage &&
+    editing.variantKey === row.variantKey;
+  const srcActive =
+    !!active &&
+    active.key === entry.key &&
+    active.lang === sourceLanguage &&
+    active.variantKey === row.variantKey;
+
   // Frozen first column. Merged view: one RefCell (source value + key + note +
   // flags). Split view: the classic Key cell (or a variant form label).
   const firstCell = merged ? (
@@ -1017,6 +1064,15 @@ function RowView({
       isOrphan={isOrphan}
       isUnused={unused}
       onOpenMenu={openStringMenu}
+      sourceEditable={sourceEditable}
+      sourceEditing={srcEditing}
+      sourceActive={srcActive}
+      sourceSeed={srcEditing ? editSeed : null}
+      doubleClickToEdit={doubleClickToEdit}
+      onSourceActivate={() => onActivate(srcCellId)}
+      onSourceStartEdit={() => onStartEdit(srcCellId)}
+      onSourceResolve={(val, move) => onCommitMove(srcCellId, val, move)}
+      onSourceCancel={() => onCancelEdit(srcCellId)}
       {...noteProps}
     />
   ) : kind === "variant" ? (
@@ -1050,9 +1106,10 @@ function RowView({
   const valueCells = valueLangs.map((lang) => {
     const cell = row.cells[lang];
     const isSource = lang === sourceLanguage;
-    // Plural/device variant cells are editable too: only the source column and
-    // excluded keys stay read-only.
-    const editable = !isSource && translatable;
+    // The source column is editable too where the format allows it (.xcstrings):
+    // its edit writes localizations[source] and never renames the key. Targets
+    // are editable when the key is translatable.
+    const editable = isSource ? sourceEditable : translatable;
     const warn = isSource ? null : computeWarn(sourceValue, cell?.value);
 
     // Changed-since-commit marker (target columns only — the source column is
@@ -1073,11 +1130,8 @@ function RowView({
         ? (pos: MenuPos) => setMenu({ kind: "cell", entry, row, lang, pos })
         : undefined;
 
-    // Keyboard cursor lives on target cells only (the source column is sticky
-    // and read-only — never the active cell).
     const cellId: EditingCell = { key: entry.key, lang, variantKey: row.variantKey };
     const isActive =
-      !isSource &&
       !!active &&
       active.key === entry.key &&
       active.lang === lang &&
@@ -1111,6 +1165,12 @@ function RowView({
         key={lang}
         cell={cell}
         warn={warn}
+        sticky={isSource}
+        fallback={
+          isSource && caps.keyAsSource && row.segments.length === 0
+            ? entry.key
+            : undefined
+        }
         editing={isEditing}
         active={isActive}
         seed={isEditing ? editSeed : null}
@@ -1215,6 +1275,15 @@ function RefCell({
   isOrphan,
   isUnused,
   onOpenMenu,
+  sourceEditable,
+  sourceEditing,
+  sourceActive,
+  sourceSeed,
+  doubleClickToEdit,
+  onSourceActivate,
+  onSourceStartEdit,
+  onSourceResolve,
+  onSourceCancel,
   editingNote,
   canEditComment,
   onNoteEditStart,
@@ -1228,6 +1297,16 @@ function RefCell({
   isOrphan?: boolean;
   isUnused?: boolean;
   onOpenMenu?: (pos: MenuPos) => void;
+  /** Whether the folded source value can be edited inline (true for .xcstrings). */
+  sourceEditable: boolean;
+  sourceEditing: boolean;
+  sourceActive: boolean;
+  sourceSeed: string | null;
+  doubleClickToEdit: boolean;
+  onSourceActivate(): void;
+  onSourceStartEdit(): void;
+  onSourceResolve(value: string, move: Move): void;
+  onSourceCancel(): void;
   editingNote: boolean;
   canEditComment: boolean;
   onNoteEditStart(): void;
@@ -1242,6 +1321,55 @@ function RefCell({
   // key on its own line when it carries info beyond the shown source string.
   const singleSource = srcValue ?? entry.key;
   const showKey = !isVariant && !isHeader && entry.key !== singleSource;
+  // The folded source string is editable inline (fix base-language typos) where
+  // the format allows it; the header row carries no single source value.
+  const canEditSource = sourceEditable && !isHeader;
+
+  // Render the source value: an inline editor while editing, otherwise the prose
+  // line (clickable to edit when allowed).
+  const sourceLine = (value: string) => {
+    if (sourceEditing) {
+      return (
+        <EditTextarea
+          initial={value}
+          seed={sourceSeed}
+          className="cell-input ref-input"
+          onResolve={onSourceResolve}
+          onCancel={onSourceCancel}
+        />
+      );
+    }
+    const empty = value.trim() === "";
+    const cls =
+      "cell-value ref-source" +
+      (canEditSource ? " ref-source-editable" : "") +
+      (sourceActive ? " cell-active" : "");
+    const hint = doubleClickToEdit
+      ? "Base language — double-click to edit"
+      : "Base language — click to edit";
+    return (
+      <div
+        className={cls}
+        title={canEditSource ? hint : undefined}
+        onClick={
+          canEditSource
+            ? doubleClickToEdit
+              ? onSourceActivate
+              : onSourceStartEdit
+            : undefined
+        }
+        onDoubleClick={
+          canEditSource && doubleClickToEdit ? onSourceStartEdit : undefined
+        }
+      >
+        {empty ? (
+          <span className="cell-empty">(no source)</span>
+        ) : (
+          <FormatValue value={value} />
+        )}
+      </div>
+    );
+  };
 
   return (
     <div
@@ -1258,11 +1386,9 @@ function RefCell({
       {isVariant ? (
         <>
           <div className="variant-label">{row.variantLabel}</div>
-          {srcValue !== undefined && srcValue.trim() !== "" && (
-            <div className="cell-value ref-source">
-              <FormatValue value={srcValue} />
-            </div>
-          )}
+          {(canEditSource ||
+            (srcValue !== undefined && srcValue.trim() !== "")) &&
+            sourceLine(srcValue ?? "")}
         </>
       ) : isHeader ? (
         <div className="key-head">
@@ -1276,9 +1402,7 @@ function RefCell({
       ) : (
         <>
           <div className="key-head">
-            <div className="cell-value ref-source">
-              <FormatValue value={singleSource} />
-            </div>
+            {sourceLine(singleSource)}
             {onOpenMenu && (
               <Kebab onOpen={onOpenMenu} label="Key actions" className="row-kebab" />
             )}
@@ -1580,10 +1704,14 @@ function StateBadge({ state }: { state?: string }) {
   );
 }
 
-/** Editable target cell: click → textarea; Enter saves, Esc cancels, blur saves. */
+/** Editable target / source cell: click → textarea; Enter saves, Esc cancels,
+ * blur saves. `sticky` styles it as the frozen source column; `fallback` is the
+ * implicit value (the key) shown + edited from when the cell is empty. */
 function EditableCell({
   cell,
   warn,
+  sticky,
+  fallback,
   editing,
   active,
   seed,
@@ -1598,6 +1726,11 @@ function EditableCell({
 }: {
   cell: CatalogCell | undefined;
   warn: FormatWarn | null;
+  /** Sticky/frozen styling — the source column in split view. */
+  sticky?: boolean;
+  /** Implicit value shown + edited from when the cell is empty (the key, for the
+   * base source cell of a keyAsSource format). */
+  fallback?: string;
   editing: boolean;
   active?: boolean;
   seed: string | null;
@@ -1615,8 +1748,9 @@ function EditableCell({
   if (editing) {
     return (
       <CellEditor
-        initial={cell?.value ?? ""}
+        initial={cell?.value ?? fallback ?? ""}
         seed={seed}
+        sticky={sticky}
         onResolve={onResolve}
         onCancel={onCancel}
       />
@@ -1624,12 +1758,19 @@ function EditableCell({
   }
 
   const isEmpty = !cell || cell.value.trim() === "";
-  let cls = warn ? "cell cell-editable cell-warn-box" : "cell cell-editable";
+  // Empty source cell → show the key (the implicit base value), dimmed/italic.
+  const showFallback = isEmpty && fallback !== undefined;
+  const baseCls = sticky ? "cell col-source cell-editable" : "cell cell-editable";
+  let cls = warn ? `${baseCls} cell-warn-box` : baseCls;
   if (onMenu) cls += " cell-has-menu";
   cls += changeClass(changeKind);
   if (active) cls += " cell-active";
   const editHint = doubleClickToEdit ? "double-click to edit" : "click to edit";
-  const title = changeKind
+  const title = sticky
+    ? showFallback
+      ? `Base language — ${editHint} (adds a development value; the key is unchanged)`
+      : `Base language — ${editHint}`
+    : changeKind
     ? `${changeTitle(changeKind, oldValue)} · ${editHint}`
     : editHint.charAt(0).toUpperCase() + editHint.slice(1);
   return (
@@ -1647,19 +1788,68 @@ function EditableCell({
           : undefined
       }
     >
-      <div className={isEmpty ? "cell-value cell-empty" : "cell-value"}>
-        {isEmpty ? "(untranslated)" : <FormatValue value={cell!.value} />}
+      <div
+        className={
+          showFallback
+            ? "cell-value cell-source-fallback"
+            : isEmpty
+            ? "cell-value cell-empty"
+            : "cell-value"
+        }
+      >
+        {showFallback ? (
+          <FormatValue value={fallback!} />
+        ) : isEmpty ? (
+          "(untranslated)"
+        ) : (
+          <FormatValue value={cell!.value} />
+        )}
       </div>
-      <StateBadge state={cell?.state} />
+      {!sticky && <StateBadge state={cell?.state} />}
       {warn && <FormatWarning warn={warn} />}
       {onMenu && <Kebab onOpen={onMenu} label="Review state" className="cell-kebab" />}
     </div>
   );
 }
 
+/** The editing cell wrapper (a value column, or the sticky source column). */
 function CellEditor({
   initial,
   seed,
+  sticky,
+  onResolve,
+  onCancel,
+}: {
+  initial: string;
+  seed: string | null;
+  sticky?: boolean;
+  onResolve(value: string, move: Move): void;
+  onCancel(): void;
+}) {
+  return (
+    <div className={sticky ? "cell col-source cell-editing" : "cell cell-editing"}>
+      <EditTextarea
+        initial={initial}
+        seed={seed}
+        className="cell-input"
+        onResolve={onResolve}
+        onCancel={onCancel}
+      />
+    </div>
+  );
+}
+
+/**
+ * The bare editing <textarea>: focuses on mount (selecting the existing text, or
+ * placing the cursor after a typed seed char), auto-grows, and resolves exactly
+ * once — Enter → "down", Tab/Shift+Tab → right/left, Escape → cancel, blur →
+ * commit-in-place. Used inside a CellEditor (value columns) and inline in the
+ * merged Key+Source column (the `className` carries the right styling).
+ */
+function EditTextarea({
+  initial,
+  seed,
+  className,
   onResolve,
   onCancel,
 }: {
@@ -1667,6 +1857,7 @@ function CellEditor({
   /** Char that opened the editor (type-to-edit) → start from it; null = select
    * the existing text so the first keystroke replaces it. */
   seed: string | null;
+  className: string;
   onResolve(value: string, move: Move): void;
   onCancel(): void;
 }) {
@@ -1706,27 +1897,26 @@ function CellEditor({
   }, [draft]);
 
   return (
-    <div className="cell cell-editing">
-      <textarea
-        ref={ref}
-        className="cell-input"
-        value={draft}
-        rows={1}
-        onChange={(e) => setDraft(e.target.value)}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" && !e.shiftKey) {
-            e.preventDefault();
-            finish("down");
-          } else if (e.key === "Tab") {
-            e.preventDefault();
-            finish(e.shiftKey ? "left" : "right");
-          } else if (e.key === "Escape") {
-            e.preventDefault();
-            finish(null);
-          }
-        }}
-        onBlur={() => finish("none")}
-      />
-    </div>
+    <textarea
+      ref={ref}
+      className={className}
+      value={draft}
+      rows={1}
+      onChange={(e) => setDraft(e.target.value)}
+      onClick={(e) => e.stopPropagation()}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" && !e.shiftKey) {
+          e.preventDefault();
+          finish("down");
+        } else if (e.key === "Tab") {
+          e.preventDefault();
+          finish(e.shiftKey ? "left" : "right");
+        } else if (e.key === "Escape") {
+          e.preventDefault();
+          finish(null);
+        }
+      }}
+      onBlur={() => finish("none")}
+    />
   );
 }

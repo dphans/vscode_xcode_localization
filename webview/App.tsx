@@ -355,6 +355,9 @@ export function App() {
   const [usage, setUsage] = useState<Record<string, number> | null>(null);
   const [usageFiles, setUsageFiles] = useState<number>(0);
   const [scanning, setScanning] = useState(false);
+  // Latest source language, read inside the (mount-only) message handler so it
+  // can tell a source pick from a target pick without re-subscribing.
+  const sourceLangRef = useRef("");
 
   // Persist the per-file layout (chosen target columns + dragged widths). The
   // host's workspaceState is the durable store; vscode.setState is just a local
@@ -397,8 +400,10 @@ export function App() {
         setInherited(msg.lastTargets);
         setHydrated(true);
       } else if (msg.type === "selectLanguage") {
-        // Sidebar picked one language → show only Key/source + that column.
-        setChosen([msg.lang]);
+        // Sidebar picked one language → focus it. A target shows Key/source +
+        // that column; the source has no separate target column, so focusing it
+        // means "no targets" → just the (editable) Key/source column.
+        setChosen(msg.lang === sourceLangRef.current ? [] : [msg.lang]);
       }
     };
     window.addEventListener("message", onMessage);
@@ -407,6 +412,9 @@ export function App() {
   }, []);
 
   const catalog = useMemo(() => model ?? parseCatalog(text), [model, text]);
+  // Keep the ref current so the message handler (subscribed once) sees the live
+  // source language.
+  sourceLangRef.current = catalog.sourceLanguage;
 
   const nonSource = useMemo(
     () => catalog.languages.filter((l) => l !== catalog.sourceLanguage),

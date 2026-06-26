@@ -742,6 +742,22 @@ html, body { margin: 0; padding: 0; height: 100%; }
   outline: 1px solid var(--vscode-focusBorder);
   outline-offset: -1px;
 }
+/* The merged Key+Source column's source line isn't a full .cell, so it gets its
+   own (slightly offset) ring when it's the keyboard cursor. */
+.grid-wrap:focus-within .ref-source.cell-active {
+  outline: 1px solid var(--vscode-focusBorder);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+/* Editable folded source line (merged view): a text caret + a faint hover frame
+   so it reads as editable, matching the value cells' hover affordance. */
+.ref-source-editable { cursor: text; border-radius: var(--app-radius); }
+.grid-body .row .ref-source-editable:hover {
+  box-shadow: inset 0 0 0 1px var(--vscode-input-border, var(--vscode-contrastBorder, var(--vscode-focusBorder)));
+}
+/* The inline source editor grows to fill the column (beside the kebab on the
+   single-key row; full width on a variant row). */
+.ref-input { flex: 1 1 auto; min-width: 0; }
 
 /* ---- Row / cell action affordances ---- */
 /* Key header: name grows, kebab sits at the trailing edge. The kebab keeps its
