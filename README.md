@@ -1,5 +1,7 @@
 # Xcode Localization
 
+[![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+
 A fast, native-feeling visual editor for **Xcode String Catalogs** - localize your iOS, iPadOS, and macOS apps directly in VS Code, without opening Xcode.
 
 Xcode Localization turns `.xcstrings` (and legacy `.strings`) files into a familiar spreadsheet-style grid: keys down the rows, languages across the columns, and your source language pinned for reference. Every edit is written back surgically, so your `git diff` stays as clean as if Xcode itself had saved the file.
@@ -123,4 +125,8 @@ Press **F5** in VS Code to launch the Extension Development Host, then open a `.
 
 ## Feedback
 
-Issues and feature requests are welcome on the project's [GitHub repository](https://github.com/dphans/vse_xcode_i18n).
+Issues and feature requests are welcome on the project's [GitHub repository](https://github.com/dphans/vscode_xcode_localization).
+
+## License
+
+[MIT](LICENSE) © Bao Phan

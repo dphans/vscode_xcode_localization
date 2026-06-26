@@ -1,7 +1,7 @@
 {
   "name": "xcode-i18n",
   "displayName": "Xcode Localization",
-  "description": "Visual editor for Xcode String Catalog (.xcstrings) files",
+  "description": "Visual editor for Xcode String Catalogs (.xcstrings) and legacy .strings — localize iOS, iPadOS & macOS apps in VS Code with a spreadsheet grid, clean git diffs, and translation progress.",
   "version": "0.0.1",
   "license": "MIT",
   "icon": "assets/icon.png",
@@ -15,7 +15,27 @@
     "vscode": "^1.90.0"
   },
   "categories": [
+    "Programming Languages",
     "Other"
+  ],
+  "keywords": [
+    "xcode",
+    "ios",
+    "ipados",
+    "macos",
+    "swift",
+    "swiftui",
+    "objective-c",
+    "localization",
+    "internationalization",
+    "i18n",
+    "l10n",
+    "translation",
+    "xcstrings",
+    "string catalog",
+    "strings",
+    "localizable",
+    "apple"
   ],
   "main": "./dist/extension.js",
   "contributes": {
