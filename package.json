@@ -1,0 +1,149 @@
+{
+  "name": "xcode-i18n",
+  "displayName": "Xcode Localization",
+  "description": "Visual editor for Xcode String Catalog (.xcstrings) files",
+  "version": "0.0.1",
+  "icon": "assets/icon.png",
+  "publisher": "dphans-github",
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dphans/vscode_xcode_localization.git"
+  },
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "customEditors": [
+      {
+        "viewType": "xcodeI18n.xcstringsEditor",
+        "displayName": "Xcode String Catalog",
+        "selector": [
+          {
+            "filenamePattern": "*.xcstrings"
+          }
+        ],
+        "priority": "default"
+      },
+      {
+        "viewType": "xcodeI18n.stringsEditor",
+        "displayName": "Xcode .strings (i18n grid)",
+        "selector": [
+          {
+            "filenamePattern": "*.strings"
+          }
+        ],
+        "priority": "default"
+      }
+    ],
+    "configurationDefaults": {
+      "workbench.editorAssociations": {
+        "git:/**/*.xcstrings": "default",
+        "git:/**/*.strings": "default",
+        "gitlens:/**/*.xcstrings": "default",
+        "gitlens:/**/*.strings": "default"
+      }
+    },
+    "commands": [
+      {
+        "command": "xcodeI18n.openAsText",
+        "title": "Open as Text",
+        "category": "Xcode Localization",
+        "icon": "$(go-to-file)"
+      },
+      {
+        "command": "xcodeI18n.refreshLocalizations",
+        "title": "Refresh",
+        "category": "Xcode Localization",
+        "icon": "$(refresh)"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "xcodeI18n",
+          "title": "Xcode Localization",
+          "icon": "assets/activity.svg"
+        }
+      ]
+    },
+    "views": {
+      "xcodeI18n": [
+        {
+          "id": "xcodeI18n.localizations",
+          "name": "Xcode Localization"
+        }
+      ]
+    },
+    "viewsWelcome": [
+      {
+        "view": "xcodeI18n.localizations",
+        "contents": "No localizations found in this workspace.\n\nThis view lists .xcstrings String Catalogs and legacy <lang>.lproj/*.strings files. Open a folder that contains them to see languages and translation progress here."
+      }
+    ],
+    "menus": {
+      "editor/title": [
+        {
+          "command": "xcodeI18n.openAsText",
+          "when": "activeCustomEditorId == xcodeI18n.xcstringsEditor || activeCustomEditorId == xcodeI18n.stringsEditor",
+          "group": "navigation"
+        }
+      ],
+      "view/title": [
+        {
+          "command": "xcodeI18n.refreshLocalizations",
+          "when": "view == xcodeI18n.localizations",
+          "group": "navigation"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "Xcode Localization",
+      "properties": {
+        "xcodeI18n.displayMode": {
+          "type": "string",
+          "enum": ["comfortable", "compact"],
+          "enumDescriptions": [
+            "Roomier rows with more padding (default).",
+            "Tighter rows so more fit on screen."
+          ],
+          "default": "comfortable",
+          "description": "Row density for the String Catalog grid."
+        },
+        "xcodeI18n.mergeKeySource": {
+          "type": "boolean",
+          "default": true,
+          "description": "Merge the Key and source columns into one. The key shows as a secondary line only when it differs from the source value. Uncheck to show Key and source as separate columns."
+        },
+        "xcodeI18n.doubleClickToEdit": {
+          "type": "boolean",
+          "default": true,
+          "description": "Require a double-click to open a cell for editing; a single click only selects it. Uncheck to open the editor with a single click."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "build": "node esbuild.js",
+    "watch": "node esbuild.js --watch",
+    "typecheck": "tsc --noEmit",
+    "vscode:prepublish": "node esbuild.js --production"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "@types/vscode": "^1.90.0",
+    "esbuild": "^0.21.5",
+    "typescript": "^5.4.5"
+  },
+  "dependencies": {
+    "jsonc-parser": "^3.3.1",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "build",
+      "type": "shell",
+      "command": "node",
+      "args": ["esbuild.js"],
+      "group": { "kind": "build", "isDefault": true },
+      "problemMatcher": [],
+      "presentation": { "reveal": "silent", "clear": true },
+      "windows": {
+        "options": {
+          "env": {
+            "PATH": "C:\\Program Files\\nodejs;${env:PATH}"
+          }
+        }
+      }
+    },
+    {
+      "label": "watch",
+      "type": "shell",
+      "command": "node",
+      "args": ["esbuild.js", "--watch"],
+      "isBackground": true,
+      "group": "build",
+      "problemMatcher": [],
+      "presentation": { "reveal": "never" },
+      "windows": {
+        "options": {
+          "env": {
+            "PATH": "C:\\Program Files\\nodejs;${env:PATH}"
+          }
+        }
+      }
+    }
+  ]
+}

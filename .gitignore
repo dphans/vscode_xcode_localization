@@ -1,0 +1,7 @@
+node_modules/
+dist/
+media/*.js
+media/*.js.map
+*.vsix
+.DS_Store
+Thumbs.db

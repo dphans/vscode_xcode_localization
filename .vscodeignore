@@ -1,0 +1,22 @@
+# Keep the VSIX lean: ship only the bundled output + manifest/readme.
+# esbuild bundles everything into dist/ and media/, so sources and node_modules
+# are not needed at runtime.
+.vscode/**
+.git/**
+.github/**
+src/**
+webview/**
+sample/**
+node_modules/**
+memory/**
+**/*.map
+**/*.ts
+**/tsconfig*.json
+esbuild.js
+.gitignore
+.vscodeignore
+*.vsix
+
+# Ship only the packaged PNG icon; keep design sources out of the VSIX.
+assets/Icon.sketch
+assets/icon.svg

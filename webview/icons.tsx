@@ -1,0 +1,200 @@
+// VSCode codicons as inline SVGs — theme-aware via fill=currentColor, with no
+// font, dependency, or CSP wiring needed. Paths are copied verbatim from the
+// official source: https://github.com/microsoft/vscode-codicons
+// (src/icons/<name>.svg). See the "no emoji — use codicons" preference.
+
+interface IconProps {
+  /** Pixel size (square). Codicons are authored on a 16×16 grid. */
+  size?: number;
+  className?: string;
+}
+
+function Codicon({
+  path,
+  size = 16,
+  className,
+}: IconProps & { path: string }) {
+  return (
+    <svg
+      className={className}
+      width={size}
+      height={size}
+      viewBox="0 0 16 16"
+      fill="currentColor"
+      aria-hidden
+    >
+      <path d={path} />
+    </svg>
+  );
+}
+
+export function SearchIcon(p: IconProps) {
+  return (
+    <Codicon
+      {...p}
+      path="M10.0195 10.7266C9.06578 11.5217 7.83875 12 6.5 12C3.46243 12 1 9.53757 1 6.5C1 3.46243 3.46243 1 6.5 1C9.53757 1 12 3.46243 12 6.5C12 7.83875 11.5217 9.06578 10.7266 10.0195L13.8535 13.1464C14.0488 13.3417 14.0488 13.6583 13.8535 13.8536C13.6583 14.0488 13.3417 14.0488 13.1464 13.8536L10.0195 10.7266ZM11 6.5C11 4.01472 8.98528 2 6.5 2C4.01472 2 2 4.01472 2 6.5C2 8.98528 4.01472 11 6.5 11C8.98528 11 11 8.98528 11 6.5Z"
+    />
+  );
+}
+
+export function CloseIcon(p: IconProps) {
+  return (
+    <Codicon
+      {...p}
+      path="M8.70701 8.00001L12.353 4.35401C12.548 4.15901 12.548 3.84201 12.353 3.64701C12.158 3.45201 11.841 3.45201 11.646 3.64701L8.00001 7.29301L4.35401 3.64701C4.15901 3.45201 3.84201 3.45201 3.64701 3.64701C3.45201 3.84201 3.45201 4.15901 3.64701 4.35401L7.29301 8.00001L3.64701 11.646C3.45201 11.841 3.45201 12.158 3.64701 12.353C3.74501 12.451 3.87301 12.499 4.00101 12.499C4.12901 12.499 4.25701 12.45 4.35501 12.353L8.00101 8.70701L11.647 12.353C11.745 12.451 11.873 12.499 12.001 12.499C12.129 12.499 12.257 12.45 12.355 12.353C12.55 12.158 12.55 11.841 12.355 11.646L8.70901 8.00001H8.70701Z"
+    />
+  );
+}
+
+export function WarningIcon(p: IconProps) {
+  return (
+    <Codicon
+      {...p}
+      path="M14.831 11.965L9.206 1.714C8.965 1.274 8.503 1 8 1C7.497 1 7.035 1.274 6.794 1.714L1.169 11.965C1.059 12.167 1 12.395 1 12.625C1 13.383 1.617 14 2.375 14H13.625C14.383 14 15 13.383 15 12.625C15 12.395 14.941 12.167 14.831 11.965ZM13.625 13H2.375C2.168 13 2 12.832 2 12.625C2 12.561 2.016 12.5 2.046 12.445L7.671 2.195C7.736 2.075 7.863 2 8 2C8.137 2 8.264 2.075 8.329 2.195L13.954 12.445C13.984 12.501 14 12.561 14 12.625C14 12.832 13.832 13 13.625 13ZM8.75 11.25C8.75 11.664 8.414 12 8 12C7.586 12 7.25 11.664 7.25 11.25C7.25 10.836 7.586 10.5 8 10.5C8.414 10.5 8.75 10.836 8.75 11.25ZM7.5 9V5.5C7.5 5.224 7.724 5 8 5C8.276 5 8.5 5.224 8.5 5.5V9C8.5 9.276 8.276 9.5 8 9.5C7.724 9.5 7.5 9.276 7.5 9Z"
+    />
+  );
+}
+
+export function InfoIcon(p: IconProps) {
+  return (
+    <Codicon
+      {...p}
+      path="M8.49902 7.49998C8.49902 7.22384 8.27517 6.99998 7.99902 6.99998C7.72288 6.99998 7.49902 7.22384 7.49902 7.49998V10.5C7.49902 10.7761 7.72288 11 7.99902 11C8.27517 11 8.49902 10.7761 8.49902 10.5V7.49998ZM8.74807 5.50001C8.74807 5.91369 8.41271 6.24905 7.99903 6.24905C7.58535 6.24905 7.25 5.91369 7.25 5.50001C7.25 5.08633 7.58535 4.75098 7.99903 4.75098C8.41271 4.75098 8.74807 5.08633 8.74807 5.50001ZM8 1C4.13401 1 1 4.13401 1 8C1 11.866 4.13401 15 8 15C11.866 15 15 11.866 15 8C15 4.13401 11.866 1 8 1ZM2 8C2 4.68629 4.68629 2 8 2C11.3137 2 14 4.68629 14 8C14 11.3137 11.3137 14 8 14C4.68629 14 2 11.3137 2 8Z"
+    />
+  );
+}
+
+export function ChevronDownIcon(p: IconProps) {
+  return (
+    <Codicon
+      {...p}
+      path="M3.14598 5.85423L7.64598 10.3542C7.84098 10.5492 8.15798 10.5492 8.35298 10.3542L12.853 5.85423C13.048 5.65923 13.048 5.34223 12.853 5.14723C12.658 4.95223 12.341 4.95223 12.146 5.14723L7.99998 9.29323L3.85398 5.14723C3.65898 4.95223 3.34198 4.95223 3.14698 5.14723C2.95198 5.34223 2.95098 5.65923 3.14598 5.85423Z"
+    />
+  );
+}
+
+export function ArrowSmallRightIcon(p: IconProps) {
+  return (
+    <Codicon
+      {...p}
+      path="M8.854 9.85398L10.854 7.85398C11.049 7.65898 11.049 7.34198 10.854 7.14698L8.854 5.14698C8.659 4.95198 8.342 4.95198 8.147 5.14698C7.952 5.34198 7.952 5.65898 8.147 5.85398L9.293 6.99998H4.5C4.224 6.99998 4 7.22398 4 7.49998C4 7.77598 4.224 7.99998 4.5 7.99998H9.293L8.147 9.14598C8.049 9.24398 8.001 9.37198 8.001 9.49998C8.001 9.62798 8.05 9.75598 8.147 9.85398C8.342 10.049 8.659 10.049 8.854 9.85398Z"
+    />
+  );
+}
+
+export function FilterIcon(p: IconProps) {
+  return (
+    <Codicon
+      {...p}
+      path="M9.5 14H6.5C6.224 14 6 13.776 6 13.5V9.329C6 8.928 5.844 8.552 5.561 8.268L1.561 4.268C1.205 3.911 1 3.418 1 2.914C1 1.858 1.858 1 2.914 1H13.086C14.142 1 15 1.858 15 2.914C15 3.417 14.796 3.911 14.439 4.267L10.439 8.267C10.156 8.551 10 8.927 10 9.328V13.499C10 13.775 9.776 13.999 9.5 13.999V14ZM7 13H9V9.329C9 8.661 9.26 8.033 9.732 7.561L13.732 3.561C13.902 3.391 14 3.155 14 2.915C14 2.411 13.59 2.001 13.086 2.001H2.914C2.41 2.001 2 2.411 2 2.915C2 3.155 2.098 3.391 2.268 3.562L6.268 7.562C6.741 8.034 7 8.662 7 9.33V13.001V13Z"
+    />
+  );
+}
+
+/** Vertical "⋮" — the row/cell action trigger. */
+export function KebabIcon(p: IconProps) {
+  return (
+    <Codicon
+      {...p}
+      path="M8 5C7.44772 5 7 4.55228 7 4C7 3.44772 7.44772 3 8 3C8.55228 3 9 3.44772 9 4C9 4.55228 8.55228 5 8 5ZM8 9C7.44771 9 7 8.55229 7 8C7 7.44772 7.44771 7 8 7C8.55228 7 9 7.44772 9 8C9 8.55229 8.55228 9 8 9ZM7 12C7 12.5523 7.44771 13 8 13C8.55228 13 9 12.5523 9 12C9 11.4477 8.55228 11 8 11C7.44771 11 7 11.4477 7 12Z"
+    />
+  );
+}
+
+/** Checkmark — active toggle / current choice in menus. */
+export function CheckIcon(p: IconProps) {
+  return (
+    <Codicon
+      {...p}
+      path="M13.6572 3.13573C13.8583 2.9465 14.175 2.95614 14.3643 3.15722C14.5535 3.35831 14.5438 3.675 14.3428 3.86425L5.84277 11.8642C5.64597 12.0494 5.33756 12.0446 5.14648 11.8535L1.64648 8.35351C1.45121 8.15824 1.45121 7.84174 1.64648 7.64647C1.84174 7.45121 2.15825 7.45121 2.35351 7.64647L5.50976 10.8027L13.6572 3.13573Z"
+    />
+  );
+}
+
+/** Spinner arc — animate with the .spin class (see gridStyles). */
+export function LoadingIcon(p: IconProps) {
+  return (
+    <Codicon
+      {...p}
+      path="M13.5 8.5C13.224 8.5 13 8.276 13 8C13 5.243 10.757 3 8 3C5.243 3 3 5.243 3 8C3 8.276 2.776 8.5 2.5 8.5C2.224 8.5 2 8.276 2 8C2 4.691 4.691 2 8 2C11.309 2 14 4.691 14 8C14 8.276 13.776 8.5 13.5 8.5Z"
+    />
+  );
+}
+
+/** Row-density glyph (stacked bars). Not a codicon — VSCode ships none that
+ * reads as "row density", so we draw three rounded bars (toggle highlights when
+ * compact is active; the title conveys the current state). */
+export function DensityIcon({ size = 16, className }: IconProps) {
+  return (
+    <svg
+      className={className}
+      width={size}
+      height={size}
+      viewBox="0 0 16 16"
+      fill="currentColor"
+      aria-hidden
+    >
+      <rect x="2" y="3" width="12" height="2.2" rx="1" />
+      <rect x="2" y="6.9" width="12" height="2.2" rx="1" />
+      <rect x="2" y="10.8" width="12" height="2.2" rx="1" />
+    </svg>
+  );
+}
+
+/** Two side-by-side bars — toggle between merged and split Key/Source columns. */
+export function ColumnsIcon({ size = 16, className }: IconProps) {
+  return (
+    <svg
+      className={className}
+      width={size}
+      height={size}
+      viewBox="0 0 16 16"
+      fill="currentColor"
+      aria-hidden
+    >
+      <rect x="2" y="3" width="5" height="10" rx="1" />
+      <rect x="9" y="3" width="5" height="10" rx="1" />
+    </svg>
+  );
+}
+
+/** Scan glyph — a magnifier over code lines, reading as "search the code". The
+ * lines inside the lens set it apart from the search field's plain magnifier
+ * and from the row-level "Find in code" action; the toolbar button it sits on
+ * runs the one-shot "scan code for unused keys" pass. */
+export function ScanIcon({ size = 16, className }: IconProps) {
+  return (
+    <svg
+      className={className}
+      width={size}
+      height={size}
+      viewBox="0 0 16 16"
+      fill="none"
+      aria-hidden
+    >
+      <circle cx="6.5" cy="6.5" r="4.6" stroke="currentColor" strokeWidth="1.2" />
+      <path
+        d="M9.8 9.8 L14 14"
+        stroke="currentColor"
+        strokeWidth="1.4"
+        strokeLinecap="round"
+      />
+      <path
+        d="M4.3 5H8.7M4.3 6.8H8.9M4.3 8.6H7.5"
+        stroke="currentColor"
+        strokeWidth="1"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+/** Small filled circle — compact state dot. */
+export function CircleFilledIcon(p: IconProps) {
+  return (
+    <Codicon
+      {...p}
+      path="M8 4C8.36719 4 8.72135 4.04818 9.0625 4.14453C9.40365 4.23828 9.72135 4.3724 10.0156 4.54688C10.3125 4.72135 10.582 4.93099 10.8242 5.17578C11.069 5.41797 11.2786 5.6875 11.4531 5.98438C11.6276 6.27865 11.7617 6.59635 11.8555 6.9375C11.9518 7.27865 12 7.63281 12 8C12 8.36719 11.9518 8.72135 11.8555 9.0625C11.7617 9.40365 11.6276 9.72266 11.4531 10.0195C11.2786 10.3138 11.069 10.5833 10.8242 10.8281C10.582 11.0703 10.3125 11.2786 10.0156 11.4531C9.72135 11.6276 9.40365 11.763 9.0625 11.8594C8.72135 11.9531 8.36719 12 8 12C7.63281 12 7.27865 11.9531 6.9375 11.8594C6.59635 11.763 6.27734 11.6276 5.98047 11.4531C5.6862 11.2786 5.41667 11.0703 5.17188 10.8281C4.92969 10.5833 4.72135 10.3138 4.54688 10.0195C4.3724 9.72266 4.23698 9.40365 4.14062 9.0625C4.04688 8.72135 4 8.36719 4 8C4 7.63281 4.04688 7.27865 4.14062 6.9375C4.23698 6.59635 4.3724 6.27865 4.54688 5.98438C4.72135 5.6875 4.92969 5.41797 5.17188 5.17578C5.41667 4.93099 5.6862 4.72135 5.98047 4.54688C6.27734 4.3724 6.59635 4.23828 6.9375 4.14453C7.27865 4.04818 7.63281 4 8 4Z"
+    />
+  );
+}
