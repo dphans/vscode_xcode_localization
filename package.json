@@ -2,7 +2,7 @@
   "name": "xcode-i18n",
   "displayName": "Xcode Localization",
   "description": "Visual editor for Xcode String Catalogs (.xcstrings) and legacy .strings — localize iOS, iPadOS & macOS apps in VS Code with a spreadsheet grid, clean git diffs, and translation progress.",
-  "version": "0.0.1",
+  "version": "1.0.1",
   "license": "MIT",
   "icon": "assets/icon.png",
   "publisher": "dphans-github",
