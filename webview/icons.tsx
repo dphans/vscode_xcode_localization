@@ -158,34 +158,25 @@ export function ColumnsIcon({ size = 16, className }: IconProps) {
   );
 }
 
-/** Scan glyph — a magnifier over code lines, reading as "search the code". The
- * lines inside the lens set it apart from the search field's plain magnifier
- * and from the row-level "Find in code" action; the toolbar button it sits on
- * runs the one-shot "scan code for unused keys" pass. */
-export function ScanIcon({ size = 16, className }: IconProps) {
+/** Telescope — the "scan / explore the codebase" action (Find unused keys).
+ * Distinct from the magnifier (which means "search / find in code") so the
+ * toolbar's one-shot "scan code for unused keys" reads differently. */
+export function ScanIcon(p: IconProps) {
   return (
-    <svg
-      className={className}
-      width={size}
-      height={size}
-      viewBox="0 0 16 16"
-      fill="none"
-      aria-hidden
-    >
-      <circle cx="6.5" cy="6.5" r="4.6" stroke="currentColor" strokeWidth="1.2" />
-      <path
-        d="M9.8 9.8 L14 14"
-        stroke="currentColor"
-        strokeWidth="1.4"
-        strokeLinecap="round"
-      />
-      <path
-        d="M4.3 5H8.7M4.3 6.8H8.9M4.3 8.6H7.5"
-        stroke="currentColor"
-        strokeWidth="1"
-        strokeLinecap="round"
-      />
-    </svg>
+    <Codicon
+      {...p}
+      path="M14.447 6.276L11.947 1.276C11.823 1.029 11.523 0.928002 11.276 1.052L8.27598 2.552C8.02898 2.676 7.92898 2.976 8.05198 3.223L8.07798 3.276L4.52498 5.052C4.27798 5.176 4.17798 5.476 4.30098 5.723L4.57698 6.276L2.02398 7.552C1.77698 7.676 1.67698 7.976 1.79998 8.223L2.79998 10.223C2.88798 10.398 3.06498 10.499 3.24698 10.499C3.32198 10.499 3.39798 10.482 3.47098 10.446L6.02398 9.17L6.29998 9.723C6.34598 9.814 6.41698 9.883 6.49898 9.93L4.56498 13.248C4.42498 13.486 4.50598 13.793 4.74498 13.932C4.82398 13.979 4.91098 14 4.99698 14C5.16898 14 5.33598 13.911 5.42898 13.752L7.92398 9.471L7.99698 9.434V14.5C7.99698 14.776 8.22098 15 8.49698 15C8.77298 15 8.99698 14.776 8.99698 14.5V9.346L11.565 13.752C11.658 13.911 11.825 14 11.997 14C12.083 14 12.17 13.979 12.249 13.932C12.487 13.793 12.568 13.487 12.429 13.248L9.70698 8.579L10.523 8.171L10.549 8.224C10.637 8.399 10.814 8.5 10.996 8.5C11.071 8.5 11.147 8.483 11.22 8.447L14.22 6.947C14.467 6.823 14.567 6.523 14.444 6.276H14.447ZM3.47398 9.329L2.92098 8.224L5.02598 7.171L5.57898 8.276L3.47398 9.329ZM6.97398 8.829L5.42098 5.724L8.52598 4.171L10.079 7.276L6.97398 8.829ZM11.224 7.329L9.17098 3.224L11.276 2.171L13.329 6.276L11.224 7.329Z"
+    />
+  );
+}
+
+/** Horizontal ellipsis (…) — the toolbar's "more / overflow actions" button. */
+export function MoreIcon(p: IconProps) {
+  return (
+    <Codicon
+      {...p}
+      path="M5 8C5 8.55229 4.55228 9 4 9C3.44772 9 3 8.55229 3 8C3 7.44772 3.44772 7 4 7C4.55228 7 5 7.44772 5 8ZM9 8C9 8.55229 8.55229 9 8 9C7.44772 9 7 8.55229 7 8C7 7.44772 7.44772 7 8 7C8.55229 7 9 7.44772 9 8ZM12 9C12.5523 9 13 8.55229 13 8C13 7.44772 12.5523 7 12 7C11.4477 7 11 7.44772 11 8C11 8.55229 11.4477 9 12 9Z"
+    />
   );
 }
 

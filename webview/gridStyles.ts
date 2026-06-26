@@ -880,6 +880,29 @@ html, body { margin: 0; padding: 0; height: 100%; }
   background: var(--vscode-menu-separatorBackground, var(--vscode-widget-border, rgba(128, 128, 128, 0.3)));
 }
 
+/* ---- Consolidated toolbar "⋯" menu ----
+   Folds the view/density toggles + the scan action + catalog stats into one
+   dropdown so the toolbar stays uncluttered. Styled like the floating .ctx-menu
+   but anchored under its button (absolute, not fixed) via the .info-menu
+   wrapper. Reuses .ctx-item rows and the .info-list stats grid. */
+.toolbar-menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 4px);
+  z-index: 20;
+  min-width: 220px;
+  padding: 4px;
+  border-radius: var(--app-radius);
+  border: 1px solid var(--vscode-menu-border, var(--vscode-widget-border, var(--vscode-contrastBorder, transparent)));
+  background: var(--vscode-menu-background, var(--vscode-editorWidget-background));
+  color: var(--vscode-menu-foreground, var(--vscode-editorWidget-foreground, var(--vscode-foreground)));
+  box-shadow: 0 2px 12px var(--vscode-widget-shadow, rgba(0, 0, 0, 0.36));
+  font-size: 13px;
+}
+/* Read-only stats footer inside the menu (quieter than the menu rows). */
+.menu-info { padding: 2px 8px; }
+.menu-info .info-list { font-size: 11px; opacity: 0.85; }
+
 /* ---- Loading state ---- */
 /* Shown until the host delivers the file text (heavy files take a moment to
    arrive + parse) so a loading catalog never reads as an empty one. */

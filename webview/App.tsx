@@ -28,12 +28,11 @@ import {
   SearchIcon,
   CloseIcon,
   WarningIcon,
-  InfoIcon,
   LoadingIcon,
-  DensityIcon,
-  ColumnsIcon,
   ScanIcon,
+  MoreIcon,
 } from "./icons";
+import { MenuItem, MenuSeparator } from "./Menu";
 import { gridStyles } from "./gridStyles";
 
 // The API VSCode injects into the webview (call acquireVsCodeApi exactly once).
@@ -243,13 +242,35 @@ function SearchBox({
   );
 }
 
-/** Catalog stats tucked behind an info button (data the user already knows). */
-function CatalogInfo({
+/**
+ * The toolbar's single "more" button (⋯): folds the rarely-used-while-translating
+ * controls into one dropdown so the bar stays uncluttered — the view + density
+ * toggles, the "find unused" scan, and the catalog stats. The settings toggles
+ * keep the menu open (flip several at once); the scan action closes it. While a
+ * scan runs, the button shows a spinner so triggering it still gives feedback
+ * after the menu has closed.
+ */
+function ToolbarMenu({
+  viewMode,
+  density,
+  scanning,
+  usage,
+  onToggleView,
+  onToggleDensity,
+  onScan,
   sourceLanguage,
   keyCount,
   langCount,
   warnCount,
 }: {
+  viewMode: ViewMode;
+  density: Density;
+  scanning: boolean;
+  /** null until the first scan → drives the action's label. */
+  usage: Record<string, number> | null;
+  onToggleView(): void;
+  onToggleDensity(): void;
+  onScan(): void;
   sourceLanguage: string;
   keyCount: number;
   langCount: number;
@@ -274,30 +295,65 @@ function CatalogInfo({
     };
   }, [open]);
 
+  const scanLabel = scanning
+    ? "Scanning source files…"
+    : usage !== null
+    ? "Re-scan for unused keys"
+    : "Find unused keys";
+
   return (
     <div className="info-menu" ref={ref}>
       <button
         type="button"
-        className="icon-btn"
-        aria-label="Catalog info"
-        title="Catalog info"
+        className={"icon-btn" + (open ? " active" : "")}
+        aria-label="View, density & tools"
+        title="View, density & tools"
+        aria-haspopup="menu"
         aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
       >
-        <InfoIcon size={14} />
+        {scanning ? (
+          <LoadingIcon size={14} className="spin" />
+        ) : (
+          <MoreIcon size={14} />
+        )}
       </button>
       {open && (
-        <div className="info-popover" role="menu">
-          <dl className="info-list">
-            <dt>Source</dt>
-            <dd>{sourceLanguage || "—"}</dd>
-            <dt>Keys</dt>
-            <dd>{keyCount}</dd>
-            <dt>Languages</dt>
-            <dd>{langCount}</dd>
-            <dt>Format warnings</dt>
-            <dd>{warnCount}</dd>
-          </dl>
+        <div className="toolbar-menu" role="menu">
+          {/* Display toggles — keep the menu open so several can be flipped. */}
+          <MenuItem
+            label="Merge Key & Source"
+            checked={viewMode === "merged"}
+            onSelect={onToggleView}
+          />
+          <MenuItem
+            label="Compact rows"
+            checked={density === "compact"}
+            onSelect={onToggleDensity}
+          />
+          <MenuSeparator />
+          <MenuItem
+            label={scanLabel}
+            icon={<ScanIcon size={13} />}
+            disabled={scanning}
+            onSelect={() => {
+              onScan();
+              setOpen(false);
+            }}
+          />
+          <MenuSeparator />
+          <div className="menu-info">
+            <dl className="info-list">
+              <dt>Source</dt>
+              <dd>{sourceLanguage || "—"}</dd>
+              <dt>Keys</dt>
+              <dd>{keyCount}</dd>
+              <dt>Languages</dt>
+              <dd>{langCount}</dd>
+              <dt>Format warnings</dt>
+              <dd>{warnCount}</dd>
+            </dl>
+          </div>
         </div>
       )}
     </div>
@@ -632,63 +688,22 @@ export function App() {
               />
             )}
           </SearchBox>
-          <button
-            type="button"
-            className={"icon-btn" + (viewMode === "split" ? " active" : "")}
-            aria-label="Toggle Key/Source columns"
-            aria-pressed={viewMode === "split"}
-            title={
-              viewMode === "split"
-                ? "Key & Source shown separately — click to merge"
-                : "Key & Source merged — click to split"
-            }
-            onClick={() => {
+          <ToolbarMenu
+            viewMode={viewMode}
+            density={density}
+            scanning={scanning}
+            usage={usage}
+            onToggleView={() => {
               const next = viewMode === "split" ? "merged" : "split";
               setViewMode(next); // optimistic; the setting echoes back to confirm
               postSetSettings({ mergeKeySource: next === "merged" });
             }}
-          >
-            <ColumnsIcon size={14} />
-          </button>
-          <button
-            type="button"
-            className={"icon-btn" + (density === "compact" ? " active" : "")}
-            aria-label="Toggle row density"
-            aria-pressed={density === "compact"}
-            title={
-              density === "compact"
-                ? "Compact rows — click for comfortable"
-                : "Comfortable rows — click for compact"
-            }
-            onClick={() => {
+            onToggleDensity={() => {
               const next = density === "compact" ? "comfortable" : "compact";
               setDensity(next); // optimistic; the setting echoes back to confirm
               postSetSettings({ displayMode: next });
             }}
-          >
-            <DensityIcon size={14} />
-          </button>
-          <button
-            type="button"
-            className="icon-btn"
-            aria-label="Scan code for unused keys"
-            title={
-              scanning
-                ? "Scanning source files…"
-                : usage !== null
-                ? "Re-scan Swift/Obj-C code for unused keys"
-                : "Scan your Swift/Obj-C code to flag keys with no literal reference (Find unused)"
-            }
-            disabled={scanning}
-            onClick={runScan}
-          >
-            {scanning ? (
-              <LoadingIcon size={14} className="spin" />
-            ) : (
-              <ScanIcon size={14} />
-            )}
-          </button>
-          <CatalogInfo
+            onScan={runScan}
             sourceLanguage={catalog.sourceLanguage}
             keyCount={keyCount}
             langCount={catalog.languages.length}
