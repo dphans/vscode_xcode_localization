@@ -2,6 +2,7 @@
 # esbuild bundles everything into dist/ and media/, so sources and node_modules
 # are not needed at runtime.
 .vscode/**
+.claude/**
 .git/**
 .github/**
 src/**

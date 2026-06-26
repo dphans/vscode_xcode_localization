@@ -3,6 +3,7 @@
   "displayName": "Xcode Localization",
   "description": "Visual editor for Xcode String Catalog (.xcstrings) files",
   "version": "0.0.1",
+  "license": "MIT",
   "icon": "assets/icon.png",
   "publisher": "dphans-github",
   "private": true,
