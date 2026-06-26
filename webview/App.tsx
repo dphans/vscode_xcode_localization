@@ -304,12 +304,20 @@ function CatalogInfo({
   );
 }
 
+/** Once the loading indicator appears, hold it at least this long so a fast load
+ * doesn't flash it on and off (anti-flicker min-dwell). */
+const MIN_LOADING_MS = 800;
+
 export function App() {
   const [text, setText] = useState<string>("");
   // Whether the host has sent the file text yet. Before it does, `text` is ""
   // which parses to zero keys — without this flag a still-loading heavy file
   // looks identical to a genuinely empty catalog ("no keys yet").
   const [received, setReceived] = useState(false);
+  // What the UI actually reads to show the loader. It trails `received` by a
+  // minimum dwell (MIN_LOADING_MS) so a quick load doesn't flicker the spinner.
+  const [showLoading, setShowLoading] = useState(true);
+  const loadingShownAt = useRef(Date.now());
   // File content at git HEAD (the diff baseline); null = no git / untracked.
   // .xcstrings ships text (parsed here); .strings ships a prebuilt catalog.
   const [baselineText, setBaselineText] = useState<string | null>(null);
@@ -363,6 +371,24 @@ export function App() {
   // host's workspaceState is the durable store; vscode.setState is just a local
   // cache for instant hot-restore. Gated on `hydrated` so the first render can't
   // overwrite the saved choice before the host has sent it.
+  // Debounce dismissing the loader: keep it up at least MIN_LOADING_MS from when
+  // it appeared, so a fast load doesn't flicker it. Re-entering the loading phase
+  // (received back to false) resets the dwell clock.
+  useEffect(() => {
+    if (!received) {
+      loadingShownAt.current = Date.now();
+      setShowLoading(true);
+      return;
+    }
+    const remaining = MIN_LOADING_MS - (Date.now() - loadingShownAt.current);
+    if (remaining <= 0) {
+      setShowLoading(false);
+      return;
+    }
+    const t = setTimeout(() => setShowLoading(false), remaining);
+    return () => clearTimeout(t);
+  }, [received]);
+
   useEffect(() => {
     if (!hydrated) return;
     vscode.setState({ targets: chosen, widths } satisfies PersistedState);
@@ -671,7 +697,7 @@ export function App() {
         </div>
       )}
 
-      {!received ? (
+      {showLoading ? (
         <div className="loading-state">
           <LoadingIcon size={16} className="spin" />
           <span>Loading catalog…</span>
